@@ -29,7 +29,7 @@ export function Timeline({ history = [], children }) {
 export function FeedbackThread({ items = [], onPost, busy = false, placeholder = "Tulis masukan untuk penanganan..." }) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const roleLabel = role => role === "user" ? "Pelapor" : role === "admin" ? "Admin" : "Instansi";
+  const roleLabel = role => role === "user" ? "Warga" : role === "admin" ? "BPBD" : "PIC instansi";
   async function submit(event) {
     event.preventDefault();
     const text = message.trim();

@@ -10,6 +10,12 @@ import Info from "./pages/Info.jsx";
 import Faq from "./pages/Faq.jsx";
 import StaffLayout from "./components/StaffLayout.jsx";
 import ReportLayout from "./components/ReportLayout.jsx";
+import Incidents from "./pages/Incidents.jsx";
+import IncidentDetail from "./pages/IncidentDetail.jsx";
+import VerifyQueue from "./pages/VerifyQueue.jsx";
+import Logistics from "./pages/Logistics.jsx";
+import PublicAlert from "./pages/PublicAlert.jsx";
+import PicManagement from "./pages/PicManagement.jsx";
 
 export default function App() {
   const params = new URLSearchParams(window.location.search);
@@ -28,12 +34,22 @@ export default function App() {
   const isAuth = path === "/masuk" || path === "/daftar";
   const publicTicket = path.match(/^\/laporan\/([^/]+)$/)?.[1];
   const governmentId = path.match(/^\/pemerintah\/laporan\/([^/]+)$/)?.[1];
+  const incidentId = path.match(/^\/pemerintah\/insiden\/([^/]+)$/)?.[1];
+  const alertId = path.match(/^\/peringatan\/([^/]+)$/)?.[1];
   const staffTicket = path.match(/^\/pemerintah\/katalog\/([^/]+)$/)?.[1];
   const staffCatalog = path === "/pemerintah/katalog" || Boolean(staffTicket);
-  const staffArea = ["/pemerintah", "/pemerintah/daftar", "/pemerintah/tinjau"].includes(path) || Boolean(governmentId) || staffCatalog;
-  if (staffArea) return <><DemoBanner /><a className="skip-link" href="#main">Lewati ke konten</a><StaffLayout path={path}>{user => staffCatalog
-    ? <PublicReports ticket={staffTicket} staff />
-    : <Government id={governmentId} user={user} view={path === "/pemerintah/daftar" ? "reports" : path === "/pemerintah/tinjau" ? "review" : "dashboard"} />}</StaffLayout></>;
+  const staffArea = ["/pemerintah", "/pemerintah/daftar", "/pemerintah/tinjau", "/pemerintah/insiden", "/pemerintah/verifikasi", "/pemerintah/logistik", "/pemerintah/pic"].includes(path) || Boolean(governmentId) || Boolean(incidentId) || staffCatalog;
+  if (alertId) return <><DemoBanner /><Header /><main id="main"><PublicAlert eventId={alertId} /></main><Footer /></>;
+  if (staffArea) return <><DemoBanner /><a className="skip-link" href="#main">Lewati ke konten</a><StaffLayout path={path}>{user => {
+    if (path === "/pemerintah/insiden") return <Incidents user={user} />;
+    if (incidentId) return <IncidentDetail id={incidentId} user={user} />;
+    if (path === "/pemerintah/verifikasi") return <VerifyQueue />;
+    if (path === "/pemerintah/logistik") return <Logistics />;
+    if (path === "/pemerintah/pic") return <PicManagement />;
+    return staffCatalog
+      ? <PublicReports ticket={staffTicket} staff />
+      : <Government id={governmentId} user={user} view={path === "/pemerintah/daftar" ? "reports" : path === "/pemerintah/tinjau" ? "review" : "dashboard"} />;
+  }}</StaffLayout></>;
   const logReportId = path.match(/^\/log\/laporan\/([^/]+)$/)?.[1];
   if (["/lapor", "/log"].includes(path) || Boolean(logReportId)) {
     return <><DemoBanner /><a className="skip-link" href="#main">Lewati ke konten</a><ReportLayout path={path}>{() => logReportId ? <PersonalReport id={logReportId} /> : <Report />}</ReportLayout></>;

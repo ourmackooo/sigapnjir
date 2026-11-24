@@ -15,6 +15,8 @@ export function verifyPassword(password, stored) {
   } catch { return false; }
 }
 
+const ROLE_LABEL = { user: "Warga", pemerintah: "PIC", admin: "BPBD" };
+
 export function safeUser(user) {
-  return { id: user.id, email: user.email, role: user.role, dinas_id: user.dinas_id, full_name: user.full_name };
+  return { id: user.id, email: user.email, role: user.role, role_label: ROLE_LABEL[user.role] ?? user.role, dinas_id: user.dinas_id, full_name: user.full_name };
 }

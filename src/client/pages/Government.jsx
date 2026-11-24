@@ -120,10 +120,10 @@ export default function Government({ id, user, view = "dashboard" }) {
     return () => { active = false; clearTimeout(timer); };
   },[user,id,query,listStatus,page,retry]);
   const permitted = ["admin","pemerintah"].includes(user?.role);
-  const title = id ? "Detail pengaduan" : review ? "Tinjau Laporan" : view === "reports" ? (admin ? "Kelola Laporan" : "Laporan dinas") : "Dashboard";
+  const title = id ? "Detail pengaduan" : review ? "Tinjau Laporan" : view === "reports" ? (admin ? "Kelola Laporan" : "Laporan instansi") : (admin ? "Dashboard BPBD" : "Dashboard PIC");
   return <section className="lk-page container"><div className="lk-title-row"><h1>{title}</h1>{/* Katalog publik di-comment sementara. <a className="btn btn--ghost" href="/pemerintah/katalog">Lihat katalog publik</a> */}</div>
       {permitted && (id ? <GovernmentDetail id={id} user={user} onSaved={() => {}} /> : <>
-      {review && !admin && <Notice error>Halaman ini khusus admin.</Notice>}
+      {review && !admin && <Notice error>Halaman ini khusus BPBD.</Notice>}
       {view === "dashboard" && <GovernmentCharts />}
       {result && view === "dashboard" && <div className="lk-stats">{[["Total laporan",result.summary.total],["Menunggu tindak lanjut",result.summary.waiting],["Sedang ditangani",result.summary.active],["Selesai",result.summary.resolved]].map(([label,value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}</div>}
       {admin && view === "dashboard" && <FaqAdmin />}

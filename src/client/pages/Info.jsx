@@ -1,20 +1,20 @@
 const SIMPLE = {
-  "/tentang": ["Tentang LaporKuy", "LaporKuy adalah platform pengaduan infrastruktur, layanan, dan program publik. Masyarakat dapat mengirim laporan, mencatat nomor tiket, dan memantau tanggapan petugas. Platform ini sudah terintegrasi AI Decision Model untuk kebutuhan routing laporan pengguna, jadi pelapor tidak perlu susah-susah memikirkan ke mana laporannya akan bermuara dan memilih satu-satu dinas yang sesuai."],
-  "/kontak": ["Hubungi pengelola", "Untuk demonstrasi lomba, hubungi tim pengembang LaporKuy. Kanal kontak instansi resmi belum dikonfigurasi pada prototipe ini."],
+  "/tentang": ["Tentang SIGAP", "SIGAP adalah platform pengaduan infrastruktur, layanan, dan program publik. Masyarakat dapat mengirim laporan, mencatat nomor tiket, dan memantau tanggapan petugas. Platform ini sudah terintegrasi AI Decision Model untuk kebutuhan routing laporan pengguna, jadi pelapor tidak perlu susah-susah memikirkan ke mana laporannya akan bermuara dan memilih satu-satu dinas yang sesuai."],
+  "/kontak": ["Hubungi pengelola", "Untuk demonstrasi lomba, hubungi tim pengembang SIGAP. Kanal kontak instansi resmi belum dikonfigurasi pada prototipe ini."],
 };
 
 const LEGAL = {
   "/syarat": {
     title: "Syarat Layanan",
-    intro: "Dengan membuat akun atau menggunakan LaporKuy, kamu menyetujui syarat di bawah ini.",
+    intro: "Dengan membuat akun atau menggunakan SIGAP, kamu menyetujui syarat di bawah ini.",
     sections: [
       {
         h: "1. Tentang layanan",
-        p: ["LaporKuy adalah platform pelaporan layanan dan program publik Kota Malang."],
+        p: ["SIGAP adalah platform pelaporan layanan dan program publik Kota Malang."],
       },
       {
         h: "2. Bukan layanan darurat",
-        p: ["Jangan gunakan LaporKuy untuk keadaan darurat (kebakaran, kecelakaan, kejahatan yang sedang berlangsung, bencana, atau ancaman keselamatan). Hubungi layanan darurat setempat secara langsung."],
+        p: ["Jangan gunakan SIGAP untuk keadaan darurat (kebakaran, kecelakaan, kejahatan yang sedang berlangsung, bencana, atau ancaman keselamatan). Hubungi layanan darurat setempat secara langsung."],
       },
       {
         h: "3. Akun",
@@ -41,17 +41,17 @@ const LEGAL = {
         p: ["Laporan baru bersifat pribadi secara bawaan.",
              "Laporan hanya tampil di katalog publik jika kamu mencentang izin publikasi dan admin telah memeriksa serta menyetujuinya.",
              "Yang dipublikasikan hanya ringkasan yang telah diredaksi (judul publik, lokasi umum, dan deskripsi ringkas). Identitas pelapor, foto, dan isi asli laporan tidak ditampilkan.",
-             "Admin dapat menahan, menyamarkan, atau menolak publikasi laporan yang melanggar syarat ini."],
+             "BPBD dapat menahan, menyamarkan, atau menolak publikasi laporan yang melanggar syarat ini."],
       },
       {
         h: "7. Penanganan laporan",
-        p: ["Petugas instansi dapat memperbarui status, progres, dan tanggapan atas laporan yang menjadi kewenangan dinasnya. Admin memantau secara baca-saja.",
+        p: ["PIC instansi dapat memperbarui status, progres, dan tanggapan atas laporan yang menjadi kewenangan dinasnya. BPBD memantau dan mengoordinasikan seluruh laporan.",
              "Saat petugas menandai laporan selesai, kamu dapat menyetujui atau menolak. Jika ditolak, laporan dikembalikan untuk ditangani kembali dan penolakan tercatat di riwayat.",
              "Riwayat penanganan dan diskusi antara pelapor dan instansi tersimpan pada laporan terkait."],
       },
       {
         h: "8. Hak atas konten",
-        p: ["Kamu tetap memiliki hak atas isi laporan dan fotomu. Dengan mengirimkannya, kamu memberi LaporKuy izin terbatas untuk menyimpan, memproses, menampilkan kepada pihak yang berwenang menanganinya, dan (bila kamu mengizinkan publikasi) menampilkan ringkasan yang telah diredaksi di katalog publik."],
+        p: ["Kamu tetap memiliki hak atas isi laporan dan fotomu. Dengan mengirimkannya, kamu memberi SIGAP izin terbatas untuk menyimpan, memproses, menampilkan kepada pihak yang berwenang menanganinya, dan (bila kamu mengizinkan publikasi) menampilkan ringkasan yang telah diredaksi di katalog publik."],
       },
       {
         h: "9. Batasan tanggung jawab",
@@ -63,14 +63,14 @@ const LEGAL = {
       },
       {
         h: "11. Kontak",
-        p: ["Pertanyaan tentang syarat ini dapat disampaikan kepada tim pengembang LaporKuy melalui halaman Hubungi Kami."],
+        p: ["Pertanyaan tentang syarat ini dapat disampaikan kepada tim pengembang SIGAP melalui halaman Hubungi Kami."],
       },
     ],
   },
 
   "/privasi": {
     title: "Kebijakan Privasi",
-    intro: "Kebijakan ini menjelaskan data apa yang dikumpulkan LaporKuy, untuk apa digunakan, dan bagaimana kamu dapat mengendalikannya.",
+    intro: "Kebijakan ini menjelaskan data apa yang dikumpulkan SIGAP, untuk apa digunakan, dan bagaimana kamu dapat mengendalikannya.",
     sections: [
       {
         h: "1. Data yang kami kumpulkan",
@@ -91,8 +91,8 @@ const LEGAL = {
       {
         h: "3. Siapa yang dapat melihat datamu",
         p: ["Kamu: semua laporan, foto, dan diskusi pada akunmu.",
-             "Petugas instansi: laporan yang menjadi kewenangan dinasnya.",
-             "Admin pemerintah: seluruh laporan untuk pemantauan dan moderasi.",
+             "PIC instansi: laporan yang menjadi kewenangan dinasnya.",
+             "BPBD: seluruh laporan untuk pemantauan, moderasi, dan koordinasi.",
              "Publik: hanya ringkasan teredaksi dari laporan yang kamu izinkan dan telah disetujui admin. Identitas, foto, dan isi asli tidak ditampilkan."],
         p: ["Karena laporan dapat memuat identitas dan foto, hindari mencantumkan informasi pribadi yang tidak diperlukan."],
       },
@@ -116,7 +116,7 @@ const LEGAL = {
       },
       {
         h: "6. Anak-anak",
-        p: ["LaporKuy ditujukan bagi pengguna dewasa. Kami tidak dengan sengaja mengumpulkan data pribadi anak tanpa persetujuan orang tua atau wali."],
+        p: ["SIGAP ditujukan bagi pengguna dewasa. Kami tidak dengan sengaja mengumpulkan data pribadi anak tanpa persetujuan orang tua atau wali."],
       },
       {
         h: "7. Perubahan kebijakan",

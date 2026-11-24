@@ -50,32 +50,40 @@ describe("Pelaporan, tanggapan, dan publikasi",() => {
     expect(publicReport({ public_title:"Judul",description_raw:"RAHASIA",contact_email:"private@test" })).not.toHaveProperty("contact_email");
   });
   test("simpan laporan, beri tanggapan, lacak dan terbitkan ringkasan",async () => {
-    const created=await request("/submit-laporan",{token:user,method:"POST",body:{description_raw:"Uji jalan berlubang\nLokasi: Malang\n\nJalan perlu diperbaiki.",is_public:true}});
+    const created=await request("/submit-laporan",{token:user,method:"POST",body:{description_raw:"Uji jalan berlubang\nLokasi: Malang\n\nJalan perlu diperbaiki.",is_public:true,lat:-7.98,lng:112.63}});
     expect(created.status).toBe(201);
     const r=created.json.report;
     expect((await request(`/reports/${r.ticket_number}`)).status).toBe(404);
     const update={status:"in_progress",progress_percent:50,note:"Petugas telah memeriksa jalan.",expected_updated_at:r.updated_at || r.submitted_at,moderation_status:"published",public_title:"Jalan berlubang",public_location:"Malang",description_redacted:"Perbaikan jalan sedang ditangani."};
-    const saved=await request(`/government/reports/${r.id}`,{token:admin,method:"PATCH",body:update});
+    const ownDinas=(await request("/government/reports",{token:petugas})).json.summary && (await request("/government/dinas",{token:admin})).json.data.find(d=>d.slug==="pu");
+    await request(`/government/reports/${r.id}/assign-dinas`,{token:admin,method:"POST",body:{dinas_id:ownDinas.id}});
+    const fresh=(await request(`/log/${r.id}`,{token:user})).json.report;
+    update.expected_updated_at=fresh.updated_at||fresh.submitted_at;
+    const saved=await request(`/government/reports/${r.id}`,{token:petugas,method:"PATCH",body:update});
     expect(saved.status).toBe(200);
     expect(saved.json.report.progress_percent).toBe(50);
-    expect((await request(`/reports/${r.ticket_number}`)).json.report.description).toBe(update.description_redacted);
-    const tracked=await request(`/track/${r.ticket_number}`,{token:user});
+    expect((await request(`/reports/${r.ticket_number}`)).status).toBe(404);
+    const tracked=await request(`/log/${r.id}`,{token:user});
     expect(tracked.json.history.at(-1).note).toBe(update.note);
-    expect(tracked.json.history.length).toBe(2);
-    expect((await request(`/track/${r.ticket_number}`)).status).toBe(401);
+    expect(tracked.json.history.length).toBe(3);
+    expect((await request(`/log/${r.id}`)).status).toBe(401);
     const stranger=(await request("/auth/login",{method:"POST",body:{email:"baru@demo.test",password:"Password123!"}})).json.token;
-    expect((await request(`/track/${r.ticket_number}`,{token:stranger})).status).toBe(404);
-    expect((await request(`/government/reports/${r.id}`,{token:admin,method:"PATCH",body:update})).status).toBe(409);
+    expect((await request(`/log/${r.id}`,{token:stranger})).status).toBe(404);
+    expect((await request(`/government/reports/${r.id}`,{token:petugas,method:"PATCH",body:update})).status).toBe(409);
   });
-  test("laporan tanpa persetujuan tidak bisa dipublikasikan",async () => {
-    const r=(await request("/track/LPK-DEMO0004",{token:user})).json.report;
-    const out=await request(`/government/reports/${r.id}`,{token:admin,method:"PATCH",body:{status:"accepted",progress_percent:10,note:"Ditinjau",moderation_status:"published",public_title:"Judul",description_redacted:"Deskripsi publik",expected_updated_at:r.updated_at}});
-    expect(out.status).toBe(400);
+  test("admin hanya memantau, instansi menindaklanjuti",async () => {
+    const r=(await request("/log",{token:user})).json.data.find(x => x.ticket_number === "LPK-DEMO0004");
+    const ownDinas=(await request("/government/dinas",{token:admin})).json.data.find(d=>d.slug==="pu");
+    await request(`/government/reports/${r.id}/assign-dinas`,{token:admin,method:"POST",body:{dinas_id:ownDinas.id}});
+    const fresh=(await request(`/log/${r.id}`,{token:user})).json.report;
+    const body={status:"accepted",progress_percent:10,note:"Ditinjau",moderation_status:"published",public_title:"Judul",description_redacted:"Deskripsi publik",expected_updated_at:fresh.updated_at};
+    expect((await request(`/government/reports/${r.id}`,{token:admin,method:"PATCH",body})).status).toBe(403);
+    expect((await request(`/government/reports/${r.id}`,{token:petugas,method:"PATCH",body})).status).toBe(200);
   });
   test("progres selesai harus 100 dan unggahan URL asing ditolak",async () => {
-    const r=(await request("/track/LPK-DEMO0001",{token:user})).json.report;
-    expect((await request(`/government/reports/${r.id}`,{token:admin,method:"PATCH",body:{status:"resolved",progress_percent:50,note:"Selesai",expected_updated_at:r.updated_at}})).status).toBe(400);
-    expect((await request("/submit-laporan",{token:user,method:"POST",body:{description_raw:"Laporan uji berkas dari sumber lain",image_url:"https://evil.test/foto.png"}})).status).toBe(400);
+    const r=(await request("/log",{token:user})).json.data.find(x => x.ticket_number === "LPK-DEMO0001");
+    expect((await request(`/government/reports/${r.id}`,{token:petugas,method:"PATCH",body:{status:"resolved",progress_percent:50,note:"Selesai",expected_updated_at:r.updated_at}})).status).toBe(400);
+    expect((await request("/submit-laporan",{token:user,method:"POST",body:{description_raw:"Laporan uji berkas dari sumber lain",image_url:"https://evil.test/foto.png",lat:-7.98,lng:112.63}})).status).toBe(400);
   });
   test("filter kata kunci dan status memotong hasil",async () => {
     const r=await request("/reports?q=sampah&status=resolved");

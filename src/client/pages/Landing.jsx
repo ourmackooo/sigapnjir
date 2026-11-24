@@ -62,7 +62,7 @@ export default function Landing() {
         <div className="container hero__inner">
           <p className="hero__eyebrow">Pemerintah Kota Malang</p>
 
-          <h1 className="hero__title">Laporkuy</h1>
+          <h1 className="hero__title">SIGAP</h1>
 
           <p className="hero__lead">
             Satu form, tanpa memilih dinas, status jelas. Laporkan masalah

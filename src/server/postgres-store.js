@@ -30,8 +30,10 @@ export function createPostgresStore() {
     async logout(token) { await sql`delete from sessions where token = ${token}`; },
     async createReport(input) {
       return sql.begin(async tx => {
-        const [row] = await tx`insert into reports (ticket_number,user_id,description_raw,image_url,is_public,lat,lng,address)
-          values (${input.ticket_number},${input.user_id},${input.description_raw},${input.image_url},${input.is_public},${input.lat},${input.lng},${input.address}) returning *`;
+        const [row] = await tx`insert into reports (ticket_number,user_id,description_raw,image_url,is_public,lat,lng,address,
+            event_id,zone_id,impact,source,verification_status)
+          values (${input.ticket_number},${input.user_id},${input.description_raw},${input.image_url},${input.is_public},${input.lat},${input.lng},${input.address},
+            ${input.event_id ?? null},${input.zone_id ?? null},${sql.json(input.impact ?? {})},${input.source ?? "warga"},'unverified') returning *`;
         await tx`insert into report_status_history (report_id,to_status,actor_id,actor_type,note,progress_percent)
           values (${row.id},'submitted',${input.user_id},'user','Laporan diterima oleh sistem.',0)`;
         return row;
@@ -64,7 +66,13 @@ export function createPostgresStore() {
         values (${reportId},${user.id},${user.full_name ?? null},${user.role},${message})
         returning id,message,sender_name,sender_role,created_at,true as mine`)[0];
     },
-    async dinas() { return sql`select id,slug,name from dinas where is_active=true order by name`; },
+    async dinas() {
+      return sql`select d.id,d.slug,d.name,d.kind,d.pic_user_id,u.full_name as pic_name,u.email as pic_email
+        from dinas d left join users u on u.id=d.pic_user_id where d.is_active=true order by d.name`;
+    },
+    async setPic(dinasId, userId) {
+      return (await sql`update dinas set pic_user_id=${userId} where id=${dinasId} returning id,slug,name,pic_user_id`)[0];
+    },
     async askFaqQuestion(userId, question) {
       return (await sql`insert into faq_questions (user_id,question) values (${userId},${question}) returning *`)[0];
     },
@@ -256,6 +264,160 @@ export function createPostgresStore() {
           from users where role='pemerintah' and dinas_id=${row.dinas_id}`;
         return { report: after };
       });
+    },
+
+    // --- SIGAP incidents ---
+    async listEvents() {
+      return sql`select e.*, u.full_name as commander_name from disaster_events e
+        left join users u on u.id=e.commander_id order by e.started_at desc`;
+    },
+    async createEvent(input) {
+      return (await sql`insert into disaster_events (code,name,type,status,started_at,commander_id)
+        values (${input.code},${input.name},${input.type},${input.status ?? "siaga"},${input.started_at ?? new Date()},${input.commander_id ?? null})
+        returning *`)[0];
+    },
+    async getEvent(id) { return (await sql`select * from disaster_events where id=${id}`)[0]; },
+    async updateEvent(id, patch) {
+      const fields = {};
+      for (const key of ["name", "type", "status", "started_at", "ended_at", "commander_id"]) if (patch[key] !== undefined) fields[key] = patch[key];
+      if (!Object.keys(fields).length) return (await sql`select * from disaster_events where id=${id}`)[0];
+      return (await sql`update disaster_events set ${sql(fields)}, updated_at=now() where id=${id} returning *`)[0];
+    },
+    async activeEvent() {
+      return (await sql`select * from disaster_events where status in ('siaga','tanggap_darurat') order by started_at desc limit 1`)[0];
+    },
+    async listZones() { return sql`select * from zones order by level, name`; },
+    async eventZones(eventId) {
+      return sql`select ez.event_id, ez.status, ez.source, ez.first_seen_at, ez.updated_at,
+          z.id, z.code, z.name, z.level, z.parent_id, z.lat, z.lng, z.population, z.vulnerable_population
+        from event_zones ez join zones z on z.id=ez.zone_id
+        where ez.event_id=${eventId} order by z.name`;
+    },
+    async upsertEventZone(eventId, zoneId, patch) {
+      return (await sql`insert into event_zones (event_id,zone_id,status,source)
+        values (${eventId},${zoneId},${patch.status ?? "waspada"},${patch.source ?? "manual"})
+        on conflict (event_id,zone_id) do update set status=excluded.status, source=excluded.source, updated_at=now()
+        returning *`)[0];
+    },
+    async reportsForEvent(eventId) {
+      return sql`select * from reports where event_id=${eventId} order by submitted_at desc`;
+    },
+    async pendingReports(eventId) {
+      return eventId
+        ? sql`select * from reports where event_id=${eventId} and verification_status='unverified' order by submitted_at`
+        : sql`select * from reports where event_id is not null and verification_status='unverified' order by submitted_at`;
+    },
+    async verifyReport(id, input) {
+      return (await sql`update reports set verification_status=${input.verification_status},
+        impact=${sql.json(input.impact)}, zone_id=${input.zone_id ?? null},
+        verified_by=${input.verified_by ?? null}, verified_at=now(), updated_at=now()
+        where id=${id} returning *`)[0];
+    },
+    async listSensors() {
+      return sql`select s.*, z.name as zone_name from sensors s left join zones z on z.id=s.zone_id order by s.code`;
+    },
+    async sensorByCode(code) { return (await sql`select * from sensors where code=${code}`)[0]; },
+    async createSensor(input) {
+      return (await sql`insert into sensors (code,name,zone_id,lat,lng,warn_cm,danger_cm,token_hash)
+        values (${input.code},${input.name},${input.zone_id ?? null},${input.lat},${input.lng},${input.warn_cm},${input.danger_cm},${input.token_hash})
+        returning *`)[0];
+    },
+    async touchSensor(id) { await sql`update sensors set last_seen_at=now() where id=${id}`; },
+    async addReading(input) {
+      return (await sql`insert into sensor_readings (sensor_id,water_cm,recorded_at,status)
+        values (${input.sensor_id},${input.water_cm},${input.recorded_at},${input.status})
+        on conflict (sensor_id,recorded_at) do nothing returning *`)[0];
+    },
+    async recentReadingsForSensor(sensorId, limit = 3) {
+      return sql`select * from sensor_readings where sensor_id=${sensorId} order by recorded_at desc limit ${limit}`;
+    },
+    async eventParticipants(eventId) {
+      return sql`select ep.id, ep.event_id, ep.dinas_id, ep.role, d.name as dinas_name, d.kind as dinas_kind,
+          u.full_name as pic_name, u.email as pic_email
+        from event_participants ep
+        join dinas d on d.id=ep.dinas_id
+        left join users u on u.id=d.pic_user_id
+        where ep.event_id=${eventId} order by ep.role, d.name`;
+    },
+    async addParticipant(eventId, dinasId, role) {
+      return (await sql`insert into event_participants (event_id,dinas_id,role) values (${eventId},${dinasId},${role})
+        on conflict (event_id,dinas_id) do update set role=excluded.role returning *`)[0];
+    },
+    async getTask(id) {
+      return (await sql`select t.*, d.name as dinas_name from incident_tasks t join dinas d on d.id=t.dinas_id where t.id=${id}`)[0];
+    },
+    async tasksForEvent(eventId, dinasId) {
+      return dinasId
+        ? sql`select t.*, d.name as dinas_name from incident_tasks t join dinas d on d.id=t.dinas_id
+            where t.event_id=${eventId} and t.dinas_id=${dinasId} order by t.created_at desc`
+        : sql`select t.*, d.name as dinas_name from incident_tasks t join dinas d on d.id=t.dinas_id
+            where t.event_id=${eventId} order by t.created_at desc`;
+    },
+    async createTask(input) {
+      return (await sql`insert into incident_tasks (event_id,dinas_id,title,description,status,assigned_to,due_at,created_by)
+        values (${input.event_id},${input.dinas_id},${input.title},${input.description ?? null},${input.status ?? "open"},${input.assigned_to ?? null},${input.due_at ?? null},${input.created_by ?? null})
+        returning *`)[0];
+    },
+    async updateTask(id, patch) {
+      const fields = {};
+      for (const key of ["title", "description", "status", "assigned_to", "due_at", "dinas_id"]) if (patch[key] !== undefined) fields[key] = patch[key];
+      if (!Object.keys(fields).length) return (await sql`select * from incident_tasks where id=${id}`)[0];
+      return (await sql`update incident_tasks set ${sql(fields)}, updated_at=now() where id=${id} returning *`)[0];
+    },
+    async shelters(zoneId) {
+      return zoneId
+        ? sql`select * from shelters where zone_id=${zoneId} order by name`
+        : sql`select * from shelters order by name`;
+    },
+    async createShelter(input) {
+      return (await sql`insert into shelters (zone_id,name,lat,lng,capacity,occupancy,status,contact,needs)
+        values (${input.zone_id},${input.name},${input.lat},${input.lng},${input.capacity ?? 0},${input.occupancy ?? 0},${input.status ?? "aktif"},${input.contact ?? null},${sql.json(input.needs ?? [])})
+        returning *`)[0];
+    },
+    async updateShelter(id, patch) {
+      const fields = {};
+      for (const key of ["name", "capacity", "occupancy", "status", "contact"]) if (patch[key] !== undefined) fields[key] = patch[key];
+      if (patch.needs !== undefined) fields.needs = sql.json(patch.needs);
+      if (!Object.keys(fields).length) return (await sql`select * from shelters where id=${id}`)[0];
+      return (await sql`update shelters set ${sql(fields)}, updated_at=now() where id=${id} returning *`)[0];
+    },
+    async priorityOverrides(eventId) { return sql`select * from priority_overrides where event_id=${eventId}`; },
+    async upsertPriorityOverride(input) {
+      return (await sql`insert into priority_overrides (event_id,zone_id,score,reason,actor_id)
+        values (${input.event_id},${input.zone_id},${input.score},${input.reason},${input.actor_id ?? null})
+        on conflict (event_id,zone_id) do update set score=excluded.score, reason=excluded.reason, actor_id=excluded.actor_id, created_at=now()
+        returning *`)[0];
+    },
+    async logisticsForEvent(eventId) {
+      return sql`select l.*, s.name as shelter_name from logistics_requests l join shelters s on s.id=l.shelter_id
+        where l.event_id=${eventId} order by s.name, l.item`;
+    },
+    async createLogistics(input) {
+      return (await sql`insert into logistics_requests (event_id,shelter_id,item,qty_requested,requested_by)
+        values (${input.event_id},${input.shelter_id},${input.item},${input.qty_requested},${input.requested_by ?? null}) returning *`)[0];
+    },
+    async updateLogistics(id, patch) {
+      const fields = {};
+      for (const key of ["qty_allocated", "qty_received", "status"]) if (patch[key] !== undefined) fields[key] = patch[key];
+      if (!Object.keys(fields).length) return (await sql`select * from logistics_requests where id=${id}`)[0];
+      return (await sql`update logistics_requests set ${sql(fields)}, updated_at=now() where id=${id} returning *`)[0];
+    },
+    async getLogistics(id) { return (await sql`select * from logistics_requests where id=${id}`)[0]; },
+    async notifications(userId) {
+      return sql`select * from notifications where user_id=${userId} order by created_at desc limit 30`;
+    },
+    async markNotificationRead(id, userId) {
+      return (await sql`update notifications set read_at=now() where id=${id} and user_id=${userId} returning *`)[0];
+    },
+    async addNotification(userId, type, payload) {
+      return (await sql`insert into notifications (user_id,type,payload,report_id) values (${userId},${type},${sql.json(payload ?? {})},${null}) returning *`)[0];
+    },
+    async audit(input) {
+      await sql`insert into audit_logs (actor_id,actor_type,action,entity_type,entity_id,metadata)
+        values (${input.actor_id ?? null},${input.actor_type ?? null},${input.action},${input.entity_type},${input.entity_id},${sql.json(input.metadata ?? {})})`;
+    },
+    async usersByDinas(dinasId) {
+      return sql`select id,email,full_name,role,dinas_id from users where dinas_id=${dinasId} and is_active=true`;
     },
   };
 }

@@ -18,7 +18,7 @@ export default function Footer() {
       <div className="container footer__grid">
         <div className="footer__brand">
           <p className="footer__logo">
-            Laporkuy<span className="brand__dot">.</span>
+            SIGAP<span className="brand__dot">.</span>
           </p>
           <p className="footer__desc">
             Platform pelaporan layanan dan program publik Kota Malang. Satu
@@ -52,14 +52,14 @@ export default function Footer() {
           <h2 className="footer__title">Kontak</h2>
           <ul>
             <li>
-              <a href="/kontak">Tim Pengembang LaporKuy</a>
+              <a href="/kontak">Tim Pengembang SIGAP</a>
             </li>
           </ul>
         </div>
       </div>
 
       <div className="container footer__bottom">
-        <p>© 2026 LaporKuy · Proyek demonstrasi</p>
+        <p>© 2026 SIGAP · Proyek demonstrasi</p>
         <p className="footer__note">
           Bukan kanal resmi pemerintah atau layanan darurat.
         </p>

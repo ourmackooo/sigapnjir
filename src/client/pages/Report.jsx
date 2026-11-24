@@ -3,6 +3,8 @@ import { api } from "../lib/api.js";
 import { StatusBadge, Progress, Notice, PrivateReport, parseReport, dateText } from "../components/ReportWidgets.jsx";
 import MapView from "../components/MapView.jsx";
 
+const IMPACT_FIELDS = [["kk", "KK"], ["jiwa", "Jiwa"], ["korban_meninggal", "Meninggal"], ["lansia", "Lansia"], ["anak", "Anak"], ["disabilitas", "Disabilitas"], ["ibu_hamil", "Ibu hamil"], ["ketinggian_air_cm", "Tinggi air (cm)"]];
+
 export function PersonalReport({ id }) {
   const [state, setState] = useState({ status: "loading" });
   const [retry, setRetry] = useState(0);
@@ -100,12 +102,26 @@ export default function Report({ user }) {
   const [receipt, setReceipt] = useState(null);
   const [retry, setRetry] = useState(0);
   const [dinasList, setDinasList] = useState([]);
+  const [publicEvents, setPublicEvents] = useState([]);
+  const [eventId, setEventId] = useState("");
+  const [zoneId, setZoneId] = useState("");
+  const [impact, setImpact] = useState({ kk: 0, jiwa: 0, korban_meninggal: 0, lansia: 0, anak: 0, disabilitas: 0, ibu_hamil: 0, ketinggian_air_cm: 0, akses_jalan: false });
 
   useEffect(() => {
     let active = true;
     api("/dinas").then(r => { if (active) setDinasList(r.data); }).catch(() => {});
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    if (logView) return;
+    let active = true;
+    api("/public/events").then(r => { if (active) setPublicEvents(r.data); }).catch(() => {});
+    return () => { active = false; };
+  }, [logView]);
+
+  const selectedEvent = publicEvents.find(e => e.id === eventId);
+  const changeImpact = (key, value) => setImpact(i => ({ ...i, [key]: value === "" ? 0 : Number(value) }));
 
   useEffect(() => {
     if (!logView) return;
@@ -139,6 +155,9 @@ export default function Report({ user }) {
         image_url: image || null, is_public: data.get("is_public") === "on",
         lat: point.lat, lng: point.lng, address: point.label || null,
         dinas_id: data.get("dinas_id") || null,
+        event_id: selectedEvent ? selectedEvent.id : null,
+        zone_id: selectedEvent && zoneId ? zoneId : null,
+        impact: selectedEvent ? impact : null,
       }) });
       setReceipt(r.report);
       setPoint(null);
@@ -169,6 +188,21 @@ export default function Report({ user }) {
       <div className="report-field"><label className="report-label" htmlFor="report-photo">Foto (opsional, PNG/JPG/WebP, maksimal 5 MB)</label><input className="report-input" id="report-photo" type="file" accept="image/png,image/jpeg,image/webp" onChange={upload} />{uploading && <Notice>Mengunggah foto...</Notice>}{photoError && <Notice error>{photoError}</Notice>}{image && <><img className="report-photo__preview" src={image} alt="Pratinjau foto bukti" /><button type="button" className="lk-inline-button" onClick={() => { setImage(""); document.getElementById("report-photo").value = ""; }}>Hapus foto dari laporan</button></>}</div>
       <div className="report-field"><span className="report-label">Titik lokasi</span><MapView value={point} onChange={setPoint} />{point?.label && <p className="report-map__address">{point.label}</p>}</div>
       <div className="report-field"><label className="report-label" htmlFor="report-dinas">Pilih dinas (opsional)</label><select className="report-input" id="report-dinas" name="dinas_id" defaultValue=""><option value="">Dirutekan Sistem</option>{dinasList.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}</select><p className="report-field__hint">Kosongkan agar sistem meneruskan laporan ke dinas terkait; memilih dinas akan menunggu persetujuan admin.</p></div>
+      {publicEvents.length > 0 && <div className="report-field">
+        <label className="report-label" htmlFor="report-event">Data dampak bencana (opsional)</label>
+        <select className="report-input" id="report-event" value={eventId} onChange={e => { const next = publicEvents.find(ev => ev.id === e.target.value); setEventId(e.target.value); setZoneId(next?.zones?.[0]?.id ?? ""); }}>
+          <option value="">Bukan laporan kebencanaan</option>
+          {publicEvents.map(event => <option key={event.id} value={event.id}>{event.name} ({event.status})</option>)}
+        </select>
+        {selectedEvent && <select className="report-input" aria-label="Zona terdampak" value={zoneId} onChange={e => setZoneId(e.target.value)}>
+          <option value="">Pilih zona terdampak</option>
+          {selectedEvent.zones.map(zone => <option key={zone.id} value={zone.id}>{zone.name}</option>)}
+        </select>}
+        {selectedEvent && <div className="lk-impact-grid">
+          {IMPACT_FIELDS.map(([key, label]) => <label key={key}>{label}<input type="number" min="0" value={impact[key]} onChange={e => changeImpact(key, e.target.value)} /></label>)}
+          <label className="lk-checkbox"><input type="checkbox" checked={impact.akses_jalan} onChange={e => setImpact(i => ({ ...i, akses_jalan: e.target.checked }))} /> Akses jalan terputus</label>
+        </div>}
+      </div>}
       <label className="lk-checkbox"><input type="checkbox" name="is_public" /> Saya mengizinkan ringkasan laporan dipublikasikan setelah diperiksa admin. Identitas dan foto tidak ditampilkan di katalog.</label>
       {error && <Notice error>{error}</Notice>}
       <button className="btn btn--primary report-submit" disabled={busy || uploading || !point}>{busy ? "Mengirim..." : "Kirim laporan"}</button>

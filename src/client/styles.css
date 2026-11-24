@@ -1657,3 +1657,46 @@ textarea.report-input {
 }
 
 
+
+/* SIGAP — insiden, peta operasi, DSS, notifikasi */
+.incident-map-wrap { height: 440px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; margin: 1rem 0 1.5rem; }
+.incident-map { position: relative; width: 100%; height: 100%; }
+.incident-zone-wrap { position: relative; display: grid; place-items: center; }
+.incident-zone-halo { position: absolute; width: 96px; height: 96px; border-radius: 50%; background: color-mix(in srgb, var(--zone-color) 20%, transparent); border: 1px solid color-mix(in srgb, var(--zone-color) 45%, transparent); pointer-events: none; }
+.incident-zone { position: relative; display: inline-block; transform: translateY(-4px); padding: .15rem .45rem; border-radius: 999px; background: color-mix(in srgb, var(--zone-color) 16%, white); border: 1px solid var(--zone-color); color: #14213d; font-size: .72rem; font-weight: 700; white-space: nowrap; }
+.incident-pin { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 999px; font-size: .72rem; font-weight: 800; color: #fff; border: 2px solid #fff; box-shadow: 0 2px 6px rgb(0 0 0 / .25); }
+.incident-pin--shelter { background: #0f766e; }
+.incident-pin--sensor { background: #1d4f7c; }
+.incident-dot { display: block; width: 10px; height: 10px; border-radius: 999px; background: #9ca3af; border: 2px solid #fff; }
+.incident-dot--verified { background: #059669; }
+.incident-popup { display: grid; gap: .2rem; font-size: .82rem; }
+.incident-legend { position: absolute; left: .7rem; bottom: .7rem; display: flex; flex-wrap: wrap; gap: .6rem; padding: .4rem .6rem; border-radius: 999px; background: rgb(255 255 255 / .92); font-size: .72rem; }
+.incident-legend span { display: inline-flex; align-items: center; gap: .3rem; }
+.incident-legend i { width: 10px; height: 10px; border-radius: 999px; display: inline-block; }
+.incident-legend__shelter { background: #0f766e; }
+.incident-legend__sensor { background: #1d4f7c; }
+.lk-impact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: .5rem; margin: .6rem 0; }
+.lk-impact-grid label { display: grid; gap: .2rem; font-size: .78rem; }
+.lk-impact-grid input, .lk-impact-grid select, .lk-inline-input { padding: .35rem .5rem; border: 1px solid var(--line); border-radius: 6px; font: inherit; }
+.lk-inline-input { width: 88px; }
+.lk-zone-picker { border: 1px solid var(--line); border-radius: var(--radius); padding: .6rem; margin: 0; display: grid; gap: .35rem; }
+.lk-zone-picker small { color: var(--muted); }
+.lk-verify-card { border: 1px solid var(--line); border-radius: var(--radius); padding: .8rem; margin-top: .7rem; background: var(--sand); }
+.lk-task-row { display: flex; justify-content: space-between; gap: 1rem; align-items: center; padding: .55rem 0; border-bottom: 1px solid var(--line); }
+.lk-task-row > div { display: grid; }
+.lk-task-row small { color: var(--muted); }
+.lk-notif-wrap { position: relative; margin-bottom: .6rem; }
+.lk-notif-toggle { display: inline-flex; align-items: center; gap: .35rem; }
+.lk-notif-count { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 .3rem; border-radius: 999px; background: #b91c1c; color: #fff; font-size: .68rem; font-weight: 800; }
+.lk-notif-panel { position: absolute; z-index: 40; left: 0; top: calc(100% + .35rem); width: min(320px, 80vw); max-height: 320px; overflow: auto; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 12px 28px rgb(0 0 0 / .14); padding: .5rem; }
+.lk-notif-panel li { display: grid; gap: .15rem; padding: .5rem; border-radius: 6px; cursor: pointer; font-size: .8rem; }
+.lk-notif-panel li:hover { background: var(--sand); }
+.lk-notif-panel small { color: var(--muted); }
+.lk-notif-unread { background: #eff6fc; }
+.alert-hero { padding: 1.5rem 0 1rem; }
+.alert-hero h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
+.lk-badge--siaga, .lk-badge--longsor { border-color: #b45309; background: #fff7ed; color: #7c2d12; }
+.lk-badge--tanggap_darurat, .lk-badge--banjir { border-color: #a64738; background: #fff2ef; color: #7d3025; }
+.lk-badge--pemulihan { border-color: #46779c; background: #eff6fc; color: #264e6c; }
+.lk-badge--selesai { border-color: #2f6c48; background: #edf8ef; color: #245237; }
+.lk-inline-input--wide { width: min(240px, 100%); }

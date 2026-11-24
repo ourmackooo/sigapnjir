@@ -20,7 +20,7 @@ setWorkerUrl(workerUrl);
 const protocol = new Protocol();
 let activeMaps = 0;
 
-const MAP_STYLE = {
+export const MAP_STYLE = {
   version: 8,
   glyphs: "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf",
   sprite: "https://protomaps.github.io/basemaps-assets/sprites/v4/light",
@@ -34,7 +34,7 @@ const MAP_STYLE = {
   layers: layers("protomaps", namedFlavor("light"), { lang: "id" }),
 };
 
-const INITIAL_VIEW = { longitude: 112.63, latitude: -7.98, zoom: 11 };
+export const INITIAL_VIEW = { longitude: 112.63, latitude: -7.98, zoom: 11 };
 
 async function reverseGeocode(lng, lat, signal) {
   const res = await fetch(

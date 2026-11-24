@@ -42,8 +42,8 @@ export default function ReportHeader() {
   return (
     <header className="header">
       <div className="header__inner header-lapor">
-        <a className="brand" href="/" aria-label="Laporkuy — beranda">
-          Laporkuy<span className="brand__dot">.</span>
+        <a className="brand" href="/" aria-label="SIGAP — beranda">
+          SIGAP<span className="brand__dot">.</span>
         </a>
         <div className="header__account-wrap" ref={wrapRef}>
           <button
@@ -61,7 +61,7 @@ export default function ReportHeader() {
               <span className="account-menu__email">{user?.email ?? "Pengguna"}</span>
               <a className="lk-account-link" href="/lapor" role="menuitem">Buat laporan</a>
               <a className="lk-account-link" href="/log" role="menuitem">Riwayat laporan</a>
-              {["admin","pemerintah"].includes(user?.role) && <a className="lk-account-link" href="/pemerintah" role="menuitem">Dashboard pemerintah</a>}
+              {["admin","pemerintah"].includes(user?.role) && <a className="lk-account-link" href="/pemerintah" role="menuitem">Dashboard BPBD/PIC</a>}
               <a className="lk-account-link" href={["admin", "pemerintah"].includes(user?.role) ? "/pemerintah/katalog" : "/laporan"} role="menuitem">Katalog publik</a>
               <button
                 type="button"

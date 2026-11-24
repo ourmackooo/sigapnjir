@@ -32,22 +32,22 @@ export default function Header() {
 
   const accountLabel =
     user?.role === "admin"
-      ? "Admin pemerintah"
+      ? "BPBD"
       : user?.role === "pemerintah"
-        ? "Petugas dinas"
-        : "Masyarakat";
+        ? "PIC instansi"
+        : "Warga";
 
   const dashboardLabel =
     user?.role === "admin"
-      ? "Dashboard Pemerintah"
-      : "Dashboard Dinas";
+      ? "Dashboard BPBD"
+      : "Dashboard PIC";
 
   return (
     <>
       <header className="header">
         <div className="container header__inner">
-          <a className="brand" href="/" aria-label="Laporkuy — beranda">
-            Laporkuy<span className="brand__dot">.</span>
+          <a className="brand" href="/" aria-label="SIGAP — beranda">
+            SIGAP<span className="brand__dot">.</span>
           </a>
 
           <button
@@ -88,8 +88,8 @@ export default function Header() {
                   >
                     {isStaff
                       ? user.role === "admin"
-                        ? "Dashboard"
-                        : "Dashboard Dinas"
+                        ? "Dashboard BPBD"
+                        : "Dashboard PIC"
                       : "Dashboard"}
                   </a>
                     

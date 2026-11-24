@@ -42,7 +42,7 @@ export default function CatalogHeader() {
       <header className="catalog-header">
         <div className="catalog-header__inner">
           <a className="catalog-header__brand" href="/">
-            LaporKuy.
+            SIGAP.
           </a>
           <p role="status">Memuat navigasi akun...</p>
         </div>
@@ -76,8 +76,8 @@ export default function CatalogHeader() {
   }
 
   const roleLabel = isAdmin
-    ? "Admin pemerintah"
-    : "Petugas dinas";
+    ? "BPBD"
+    : "PIC instansi";
 
   return (
     <header className="catalog-header">
@@ -85,9 +85,9 @@ export default function CatalogHeader() {
         <a
           className="catalog-header__brand"
           href="/pemerintah"
-          aria-label="LaporKuy — dashboard pemerintah"
+          aria-label="SIGAP — dashboard pemerintah"
         >
-          LaporKuy.
+          SIGAP.
         </a>
 
         <nav

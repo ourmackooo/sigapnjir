@@ -64,7 +64,7 @@ export default function Faq() {
         : <form className="lk-edit-form" onSubmit={ask}>
             {error && <Notice error>{error}</Notice>}
             {success && <Notice>{success}</Notice>}
-            <label htmlFor="faq-question">Pertanyaan<textarea id="faq-question" rows={4} maxLength={2000} minLength={10} required value={question} onChange={e => setQuestion(e.target.value)} placeholder="Tulis pertanyaanmu tentang layanan LaporKuy..." /></label>
+            <label htmlFor="faq-question">Pertanyaan<textarea id="faq-question" rows={4} maxLength={2000} minLength={10} required value={question} onChange={e => setQuestion(e.target.value)} placeholder="Tulis pertanyaanmu tentang layanan SIGAP..." /></label>
             <button className="btn btn--primary" disabled={busy}>{busy ? "Mengirim..." : "Kirim pertanyaan"}</button>
           </form>}
       {mine && <div className="lk-faq-mine">

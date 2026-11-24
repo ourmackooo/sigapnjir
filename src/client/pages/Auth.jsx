@@ -5,7 +5,7 @@ import shadeUrl from "../assets/shade.png";
 
 const SLOGANS = ["satu form", "status jelas", "transparan", "lapor tanpa ribet"];
 
-const LOGO_TEXT = "Laporkuy";
+const LOGO_TEXT = "SIGAP";
 
 const charVariants = {
   hidden: { opacity: 0 },

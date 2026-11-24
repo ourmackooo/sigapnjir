@@ -1,8 +1,3 @@
-#
-<p align="center">
-  <img src="laporkuy-logo.svg" alt="Logo SIGAP" width="260" />
-</p>
-
 # SIGAP
 
 SIGAP adalah platform pelaporan layanan publik yang diperluas menjadi **Sistem Informasi Manajemen Penanggulangan Bencana**. Modul laporan lama tetap dipakai untuk laporan lapangan; di atasnya ditambahkan lapisan **event → zona → dampak → aksi**:
